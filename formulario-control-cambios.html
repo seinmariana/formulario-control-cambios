@@ -1,2 +1,607 @@
-mkdir -p /var/www/formularios
-mv formulario.html /
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control de Cambios - Formulario</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        .project-info {
+            background: #f0f4ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+        
+        .section {
+            margin-bottom: 40px;
+            padding: 25px;
+            background: #f8f9ff;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .section-title {
+            font-size: 22px;
+            color: #667eea;
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .form-row.full {
+            grid-template-columns: 1fr;
+        }
+        
+        .question {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        input[type="text"],
+        input[type="date"],
+        input[type="time"],
+        input[type="datetime-local"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+        
+        input:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+        
+        .required {
+            color: #e74c3c;
+        }
+        
+        .action-item,
+        .rollback-item {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 2px solid #e0e0e0;
+            position: relative;
+        }
+        
+        .action-item h4,
+        .rollback-item h4 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 18px;
+        }
+        
+        .remove-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background 0.3s;
+        }
+        
+        .remove-btn:hover {
+            background: #c0392b;
+        }
+        
+        .add-btn {
+            background: #3498db;
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .add-btn:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+        }
+        
+        .submit-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+            width: 100%;
+            margin-top: 30px;
+        }
+        
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .success-message {
+            display: none;
+            background: #d4edda;
+            color: #155724;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            margin-top: 20px;
+            font-size: 16px;
+        }
+        
+        .counter {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📋 Control de Cambios - Harmony</h1>
+        
+        <div class="project-info">
+            <strong>Proyecto:</strong> <span id="projectName">Cargando...</span><br>
+            <strong>Usuario:</strong> <span id="userName">Cargando...</span>
+        </div>
+        
+        <form id="cuestionarioForm">
+            <!-- SECCIÓN 1: INFORMACIÓN GENERAL -->
+            <div class="section">
+                <h2 class="section-title">📝 Información General</h2>
+                
+                <div class="question">
+                    <label for="descripcion_cambio">1. Descripción del cambio <span class="required">*</span></label>
+                    <textarea id="descripcion_cambio" name="descripcion_cambio" required placeholder="Describe el cambio a realizar..."></textarea>
+                </div>
+                
+                <div class="form-row">
+                    <div class="question">
+                        <label for="clasificacion_cambio">2. Clasificación del cambio <span class="required">*</span></label>
+                        <select id="clasificacion_cambio" name="clasificacion_cambio" required>
+                            <option value="">Selecciona...</option>
+                            <option value="Normal">Normal</option>
+                            <option value="Urgente">Urgente</option>
+                            <option value="Emergencia">Emergencia</option>
+                        </select>
+                    </div>
+                    
+                    <div class="question">
+                        <label for="localidad">3. Localidad o Data Center <span class="required">*</span></label>
+                        <input type="text" id="localidad" name="localidad" required placeholder="Ej: AWS US-EAST-1">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="question">
+                        <label for="ambiente">4. Ambiente <span class="required">*</span></label>
+                        <select id="ambiente" name="ambiente" required>
+                            <option value="">Selecciona...</option>
+                            <option value="Desarrollo">Desarrollo</option>
+                            <option value="QA">QA</option>
+                            <option value="Staging">Staging</option>
+                            <option value="Producción">Producción</option>
+                        </select>
+                    </div>
+                    
+                    <div class="question">
+                        <label for="dependencias">5. Dependencias Impactadas <span class="required">*</span></label>
+                        <input type="text" id="dependencias" name="dependencias" required placeholder="Ej: API Gateway, Base de datos">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="question">
+                        <label for="fecha_inicio">6. Fecha/Hora de Inicio <span class="required">*</span></label>
+                        <input type="datetime-local" id="fecha_inicio" name="fecha_inicio" required>
+                    </div>
+                    
+                    <div class="question">
+                        <label for="fecha_fin">7. Fecha/Hora de Fin <span class="required">*</span></label>
+                        <input type="datetime-local" id="fecha_fin" name="fecha_fin" required>
+                    </div>
+                </div>
+                
+                <div class="question">
+                    <label for="elaborado_por">8. Elaborado Por <span class="required">*</span></label>
+                    <input type="text" id="elaborado_por" name="elaborado_por" required>
+                </div>
+            </div>
+            
+            <!-- SECCIÓN 2: ACCIONES A EJECUTAR -->
+            <div class="section">
+                <h2 class="section-title">
+                    ⚡ Acciones a Ejecutar 
+                    <span class="counter" id="accionesCounter">0 acciones</span>
+                </h2>
+                
+                <div id="accionesContainer"></div>
+                
+                <button type="button" class="add-btn" onclick="agregarAccion()">
+                    ➕ Agregar Acción
+                </button>
+            </div>
+            
+            <!-- SECCIÓN 3: PLAN DE ROLLBACK -->
+            <div class="section">
+                <h2 class="section-title">
+                    🔄 Plan de Rollback 
+                    <span class="counter" id="rollbacksCounter">0 rollbacks</span>
+                </h2>
+                
+                <div id="rollbacksContainer"></div>
+                
+                <button type="button" class="add-btn" onclick="agregarRollback()">
+                    ➕ Agregar Rollback
+                </button>
+            </div>
+            
+            <button type="submit" class="submit-btn">
+                📤 Enviar Formulario Completo
+            </button>
+            
+            <div class="success-message" id="successMessage">
+                ✅ ¡Formulario enviado correctamente! El Excel se está generando...
+            </div>
+        </form>
+    </div>
+    
+    <script>
+        // Obtener parámetros de la URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const projectName = urlParams.get('project') || 'Sin nombre';
+        const userName = urlParams.get('user') || 'Usuario';
+        const userId = urlParams.get('user_id') || '';
+        
+        document.getElementById('projectName').textContent = projectName;
+        document.getElementById('userName').textContent = userName;
+        
+        let accionCount = 0;
+        let rollbackCount = 0;
+        
+        // Función para agregar una acción
+        function agregarAccion() {
+            accionCount++;
+            const container = document.getElementById('accionesContainer');
+            
+            const accionDiv = document.createElement('div');
+            accionDiv.className = 'action-item';
+            accionDiv.id = `accion-${accionCount}`;
+            
+            accionDiv.innerHTML = `
+                <button type="button" class="remove-btn" onclick="eliminarAccion(${accionCount})">✕ Eliminar</button>
+                <h4>Acción ${accionCount}</h4>
+                
+                <div class="form-row">
+                    <div class="question">
+                        <label>Fecha de aplicación</label>
+                        <input type="date" name="fecha_accion_${accionCount}" required>
+                    </div>
+                    <div class="question">
+                        <label>Área de acción <span class="required">*</span></label>
+                        <input type="text" name="area_accion_${accionCount}" required placeholder="Ej: Backend">
+                    </div>
+                </div>
+                
+                <div class="question">
+                    <label>Acción a ejecutar <span class="required">*</span></label>
+                    <textarea name="accion_ejecutar_${accionCount}" required placeholder="Describe la acción..."></textarea>
+                </div>
+                
+                <div class="form-row">
+                    <div class="question">
+                        <label>Asignado <span class="required">*</span></label>
+                        <input type="text" name="asignado_accion_${accionCount}" required>
+                    </div>
+                    <div class="question">
+                        <label>Personal necesario</label>
+                        <input type="text" name="personal_accion_${accionCount}" placeholder="Ej: 2 personas">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="question">
+                        <label>Aprobador del resultado</label>
+                        <input type="text" name="aprobador_accion_${accionCount}">
+                    </div>
+                    <div class="question">
+                        <label>Duración estimada</label>
+                        <input type="text" name="duracion_accion_${accionCount}" placeholder="Ej: 30 min">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="question">
+                        <label>Hora de inicio</label>
+                        <input type="time" name="hora_inicio_accion_${accionCount}">
+                    </div>
+                    <div class="question">
+                        <label>Hora de finalización</label>
+                        <input type="time" name="hora_fin_accion_${accionCount}">
+                    </div>
+                </div>
+                
+                <div class="question">
+                    <label>Comentarios</label>
+                    <textarea name="comentarios_accion_${accionCount}" placeholder="Comentarios adicionales..."></textarea>
+                </div>
+            `;
+            
+            container.appendChild(accionDiv);
+            actualizarContadorAcciones();
+        }
+        
+        // Función para eliminar una acción
+        function eliminarAccion(id) {
+            const accion = document.getElementById(`accion-${id}`);
+            if (accion) {
+                accion.remove();
+                actualizarContadorAcciones();
+            }
+        }
+        
+        // Función para agregar un rollback
+        function agregarRollback() {
+            rollbackCount++;
+            const container = document.getElementById('rollbacksContainer');
+            
+            const rollbackDiv = document.createElement('div');
+            rollbackDiv.className = 'rollback-item';
+            rollbackDiv.id = `rollback-${rollbackCount}`;
+            
+            rollbackDiv.innerHTML = `
+                <button type="button" class="remove-btn" onclick="eliminarRollback(${rollbackCount})">✕ Eliminar</button>
+                <h4>Rollback ${rollbackCount}</h4>
+                
+                <div class="form-row">
+                    <div class="question">
+                        <label>Fecha de inicio</label>
+                        <input type="date" name="fecha_rollback_${rollbackCount}" required>
+                    </div>
+                    <div class="question">
+                        <label>Área de acción <span class="required">*</span></label>
+                        <input type="text" name="area_rollback_${rollbackCount}" required>
+                    </div>
+                </div>
+                
+                <div class="question">
+                    <label>Acción de rollback <span class="required">*</span></label>
+                    <textarea name="accion_rollback_${rollbackCount}" required placeholder="Describe el rollback..."></textarea>
+                </div>
+                
+                <div class="form-row">
+                    <div class="question">
+                        <label>Asignado <span class="required">*</span></label>
+                        <input type="text" name="asignado_rollback_${rollbackCount}" required>
+                    </div>
+                    <div class="question">
+                        <label>Personal necesario</label>
+                        <input type="text" name="personal_rollback_${rollbackCount}">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="question">
+                        <label>Aprobador del rollback</label>
+                        <input type="text" name="aprobador_rollback_${rollbackCount}">
+                    </div>
+                    <div class="question">
+                        <label>Duración estimada</label>
+                        <input type="text" name="duracion_rollback_${rollbackCount}">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="question">
+                        <label>Hora de inicio</label>
+                        <input type="time" name="hora_inicio_rollback_${rollbackCount}">
+                    </div>
+                    <div class="question">
+                        <label>Hora de finalización</label>
+                        <input type="time" name="hora_fin_rollback_${rollbackCount}">
+                    </div>
+                </div>
+                
+                <div class="question">
+                    <label>Comentarios</label>
+                    <textarea name="comentarios_rollback_${rollbackCount}"></textarea>
+                </div>
+            `;
+            
+            container.appendChild(rollbackDiv);
+            actualizarContadorRollbacks();
+        }
+        
+        // Función para eliminar un rollback
+        function eliminarRollback(id) {
+            const rollback = document.getElementById(`rollback-${id}`);
+            if (rollback) {
+                rollback.remove();
+                actualizarContadorRollbacks();
+            }
+        }
+        
+        // Actualizar contadores
+        function actualizarContadorAcciones() {
+            const count = document.querySelectorAll('.action-item').length;
+            document.getElementById('accionesCounter').textContent = `${count} ${count === 1 ? 'acción' : 'acciones'}`;
+        }
+        
+        function actualizarContadorRollbacks() {
+            const count = document.querySelectorAll('.rollback-item').length;
+            document.getElementById('rollbacksCounter').textContent = `${count} ${count === 1 ? 'rollback' : 'rollbacks'}`;
+        }
+        
+        // Agregar 1 acción y 1 rollback por defecto al cargar
+        window.addEventListener('DOMContentLoaded', () => {
+            agregarAccion();
+            agregarRollback();
+        });
+        
+        // Enviar formulario
+        document.getElementById('cuestionarioForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const submitBtn = document.querySelector('.submit-btn');
+            submitBtn.disabled = true;
+            submitBtn.textContent = '⏳ Enviando...';
+            
+            // Recopilar datos generales
+            const formData = {
+                project_name: projectName,
+                user_name: userName,
+                user_id: userId,
+                timestamp: new Date().toISOString(),
+                datos_generales: {
+                    descripcion_cambio: document.getElementById('descripcion_cambio').value,
+                    clasificacion_cambio: document.getElementById('clasificacion_cambio').value,
+                    localidad: document.getElementById('localidad').value,
+                    ambiente: document.getElementById('ambiente').value,
+                    dependencias: document.getElementById('dependencias').value,
+                    fecha_inicio: document.getElementById('fecha_inicio').value,
+                    fecha_fin: document.getElementById('fecha_fin').value,
+                    elaborado_por: document.getElementById('elaborado_por').value
+                },
+                acciones: [],
+                rollbacks: []
+            };
+            
+            // Recopilar acciones
+            document.querySelectorAll('.action-item').forEach((item, index) => {
+                const id = item.id.replace('accion-', '');
+                formData.acciones.push({
+                    numero: index + 1,
+                    fecha_aplicacion: document.querySelector(`[name="fecha_accion_${id}"]`).value,
+                    accion_ejecutar: document.querySelector(`[name="accion_ejecutar_${id}"]`).value,
+                    area: document.querySelector(`[name="area_accion_${id}"]`).value,
+                    asignado: document.querySelector(`[name="asignado_accion_${id}"]`).value,
+                    personal_necesario: document.querySelector(`[name="personal_accion_${id}"]`).value,
+                    aprobador: document.querySelector(`[name="aprobador_accion_${id}"]`).value,
+                    duracion: document.querySelector(`[name="duracion_accion_${id}"]`).value,
+                    hora_inicio: document.querySelector(`[name="hora_inicio_accion_${id}"]`).value,
+                    hora_finalizacion: document.querySelector(`[name="hora_fin_accion_${id}"]`).value,
+                    comentarios: document.querySelector(`[name="comentarios_accion_${id}"]`).value
+                });
+            });
+            
+            // Recopilar rollbacks
+            document.querySelectorAll('.rollback-item').forEach((item, index) => {
+                const id = item.id.replace('rollback-', '');
+                formData.rollbacks.push({
+                    numero: index + 1,
+                    fecha_inicio: document.querySelector(`[name="fecha_rollback_${id}"]`).value,
+                    accion_rollback: document.querySelector(`[name="accion_rollback_${id}"]`).value,
+                    area: document.querySelector(`[name="area_rollback_${id}"]`).value,
+                    asignado: document.querySelector(`[name="asignado_rollback_${id}"]`).value,
+                    personal_necesario: document.querySelector(`[name="personal_rollback_${id}"]`).value,
+                    aprobador: document.querySelector(`[name="aprobador_rollback_${id}"]`).value,
+                    duracion: document.querySelector(`[name="duracion_rollback_${id}"]`).value,
+                    hora_inicio: document.querySelector(`[name="hora_inicio_rollback_${id}"]`).value,
+                    hora_finalizacion: document.querySelector(`[name="hora_fin_rollback_${id}"]`).value,
+                    comentarios: document.querySelector(`[name="comentarios_rollback_${id}"]`).value
+                });
+            });
+            
+            try {
+                // Enviar a webhook de n8n
+                const response = await fetch('http://18.189.86.239:5678/webhook/formulario-completo', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                if (response.ok) {
+                    document.getElementById('successMessage').style.display = 'block';
+                    document.getElementById('cuestionarioForm').style.display = 'none';
+                } else {
+                    alert('Error al enviar el formulario. Por favor intenta de nuevo.');
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = '📤 Enviar Formulario Completo';
+                }
+            } catch (error) {
+                alert('Error de conexión: ' + error.message);
+                submitBtn.disabled = false;
+                submitBtn.textContent = '📤 Enviar Formulario Completo';
+            }
+        });
+    </script>
+</body>
+</html>
