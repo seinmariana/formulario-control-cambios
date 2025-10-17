@@ -222,7 +222,6 @@
         </div>
         
         <form id="cuestionarioForm">
-            <!-- SECCIÓN 1: INFORMACIÓN GENERAL -->
             <div class="section">
                 <h2 class="section-title">📝 Información General</h2>
                 
@@ -284,7 +283,6 @@
                 </div>
             </div>
             
-            <!-- SECCIÓN 2: ACCIONES A EJECUTAR -->
             <div class="section">
                 <h2 class="section-title">
                     ⚡ Acciones a Ejecutar 
@@ -298,7 +296,6 @@
                 </button>
             </div>
             
-            <!-- SECCIÓN 3: PLAN DE ROLLBACK -->
             <div class="section">
                 <h2 class="section-title">
                     🔄 Plan de Rollback 
@@ -323,7 +320,6 @@
     </div>
     
     <script>
-        // Obtener parámetros de la URL
         const urlParams = new URLSearchParams(window.location.search);
         const projectName = urlParams.get('project') || 'Sin nombre';
         const userName = urlParams.get('user') || 'Usuario';
@@ -335,7 +331,6 @@
         let accionCount = 0;
         let rollbackCount = 0;
         
-        // Función para agregar una acción
         function agregarAccion() {
             accionCount++;
             const container = document.getElementById('accionesContainer');
@@ -407,7 +402,6 @@
             actualizarContadorAcciones();
         }
         
-        // Función para eliminar una acción
         function eliminarAccion(id) {
             const accion = document.getElementById(`accion-${id}`);
             if (accion) {
@@ -416,7 +410,6 @@
             }
         }
         
-        // Función para agregar un rollback
         function agregarRollback() {
             rollbackCount++;
             const container = document.getElementById('rollbacksContainer');
@@ -488,7 +481,6 @@
             actualizarContadorRollbacks();
         }
         
-        // Función para eliminar un rollback
         function eliminarRollback(id) {
             const rollback = document.getElementById(`rollback-${id}`);
             if (rollback) {
@@ -497,7 +489,6 @@
             }
         }
         
-        // Actualizar contadores
         function actualizarContadorAcciones() {
             const count = document.querySelectorAll('.action-item').length;
             document.getElementById('accionesCounter').textContent = `${count} ${count === 1 ? 'acción' : 'acciones'}`;
@@ -508,13 +499,11 @@
             document.getElementById('rollbacksCounter').textContent = `${count} ${count === 1 ? 'rollback' : 'rollbacks'}`;
         }
         
-        // Agregar 1 acción y 1 rollback por defecto al cargar
         window.addEventListener('DOMContentLoaded', () => {
             agregarAccion();
             agregarRollback();
         });
         
-        // Enviar formulario
         document.getElementById('cuestionarioForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
@@ -522,7 +511,6 @@
             submitBtn.disabled = true;
             submitBtn.textContent = '⏳ Enviando...';
             
-            // Recopilar datos generales
             const formData = {
                 project_name: projectName,
                 user_name: userName,
@@ -542,7 +530,6 @@
                 rollbacks: []
             };
             
-            // Recopilar acciones
             document.querySelectorAll('.action-item').forEach((item, index) => {
                 const id = item.id.replace('accion-', '');
                 formData.acciones.push({
@@ -560,7 +547,6 @@
                 });
             });
             
-            // Recopilar rollbacks
             document.querySelectorAll('.rollback-item').forEach((item, index) => {
                 const id = item.id.replace('rollback-', '');
                 formData.rollbacks.push({
@@ -579,11 +565,11 @@
             });
             
             try {
-                // Enviar a webhook de n8n
                 const response = await fetch('https://096b1192c155.ngrok-free.app/webhook/formulario-completo', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'ngrok-skip-browser-warning': 'true'
                     },
                     body: JSON.stringify(formData)
                 });
