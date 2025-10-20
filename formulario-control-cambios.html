@@ -565,11 +565,12 @@
             });
             
             try {
-                const response = await fetch('https://096b1192c155.ngrok-free.app/webhook/formulario-completo', {
+                const proxyUrl = 'https://corsproxy.io/?';
+                const targetUrl = 'https://096b1192c155.ngrok-free.app/webhook/formulario-completo';
+                const response = await fetch(proxyUrl + encodeURIComponent(targetUrl), {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'ngrok-skip-browser-warning': 'true'
+                        'Content-Type': 'application/json'
                     },
                     body: JSON.stringify(formData)
                 });
