@@ -565,11 +565,14 @@
             });
             
              try {
-                // Enviar directamente sin proxy (probar primero)
-                const response = await fetch('http://18.189.86.239:5678/webhook/formulario-completo', {
+                // Usar proxy CORS que soporte POST con body
+                const targetUrl = 'http://18.189.86.239:5678/webhook/formulario-completo';
+                
+                const response = await fetch('https://cors-anywhere.herokuapp.com/' + targetUrl, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
                     },
                     body: JSON.stringify(formData)
                 });
